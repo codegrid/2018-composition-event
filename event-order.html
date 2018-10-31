@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width">
+  <title>各イベントの発火順序</title>
+</head>
+<body>
+
+<div>
+  <textarea id="message"
+            style="box-sizing: border-box; width: 300px; height: 100px;"></textarea>
+  <button type="button"
+          id="empty" style="vertical-align: top">ログを空にする</button>
+  <div id="log"
+       style="background-color: #ddd; width: 300px; height: 300px; overflow: auto;"
+  ></div>
+</div>
+
+<script>
+  (function () {
+    const message = document.querySelector("#message");
+    const log = document.querySelector("#log");
+    const eventsToListen = [
+      "input",
+      "beforeinput",
+      "keydown",
+      "keyup",
+      "compositionstart",
+      "compositionend",
+      "compositionupdate"
+    ];
+
+    eventsToListen.forEach(function (eventName) {
+      message.addEventListener(eventName, addLog, false);
+    });
+
+    function addLog(event) {
+      const div = document.createElement("div");
+      let eventText = event.type;
+      // dataプロパティを持っている場合は、その値も表示する
+      if (event.data !== undefined) {
+        eventText += "「" + event.data.toString() + "」";
+      }
+      // キー名がある場合は表示する
+      if (event.key !== undefined) {
+        eventText += "（" + event.key + "）";
+      }
+      div.textContent = eventText;
+      log.appendChild(div);
+    }
+
+    // ログを空にする
+    const button = document.querySelector("#empty");
+
+    button.addEventListener("click", onClickEmptyButton, false);
+
+    function onClickEmptyButton() {
+      while (log.firstChild) {
+        log.removeChild(log.firstChild)
+      }
+    }
+  })();
+</script>
+
+</body>
+</html>

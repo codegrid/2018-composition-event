@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width">
+  <title>未確定入力時は無視する</title>
+</head>
+<body>
+
+<div>
+  <textarea id="message"
+            style="box-sizing: border-box; width: 300px; height: 100px;"></textarea>
+  <div id="log"
+       style="background-color: #ddd; width: 300px; height: 300px; overflow: auto;"
+  ></div>
+</div>
+
+<script>
+  (function () {
+    const message = document.querySelector("#message");
+    const log = document.querySelector("#log");
+
+    // inputイベントのisComposingが使用可能かどうか
+    const inputEventIsComposing = ("InputEvent" in window) && InputEvent.prototype.hasOwnProperty("isComposing");
+    // inputイベントのisComposingが使用できない場合の管理用変数
+    let isComposing;
+
+    // 文字列同期の関数
+    function syncText() {
+      if (log.textContent !== message.value) {
+        log.textContent = message.value;
+      }
+    }
+
+    // inputEvent発火時、変換中かどうかを返す
+    function composing(event) {
+      if (inputEventIsComposing) {
+        return event.isComposing;
+      }
+      return isComposing;
+    }
+
+    function onInput(event) {
+      if (composing(event)) {
+        return;
+      }
+      syncText();
+    }
+
+    function onCompositionend() {
+      syncText();
+    }
+
+    message.addEventListener("input", onInput, false);
+    message.addEventListener("compositionend", onCompositionend, false);
+
+    // inputイベントのisComposingが使用できない場合は、Composition Eventsを使って管理する
+    if (!inputEventIsComposing) {
+      isComposing = false;
+
+      message.addEventListener("compositionstart", function (event) {
+        isComposing = true;
+      });
+
+      message.addEventListener("compositionend", function (event) {
+        isComposing = false;
+      });
+    }
+  })();
+</script>
+
+</body>
+</html>

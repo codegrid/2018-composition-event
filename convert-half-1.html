@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width">
+  <title>全角数字を半角数字にリアルタイム変換</title>
+</head>
+<body>
+
+<div>
+  <input type="text" id="textbox" style="width: 300px;">
+</div>
+
+<script>
+  (function () {
+    const textbox = document.querySelector("#textbox");
+
+    function convertToHalfWidthNumber(text) {
+      return text.replace(/[０-９]/g, function (str) {
+        return String.fromCharCode(str.charCodeAt(0) - 0xFEE0);
+      });
+    }
+
+    function onInput(event) {
+      const textbox = event.target;
+      textbox.value = convertToHalfWidthNumber(textbox.value);
+    }
+
+    textbox.addEventListener("input", onInput, false);
+  })();
+</script>
+
+</body>
+</html>

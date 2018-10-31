@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width">
+  <title>全角数字を半角数字にリアルタイム変換</title>
+</head>
+<body>
+
+<div>
+  <input type="text" id="textbox" style="width: 300px;">
+</div>
+
+<script>
+  (function () {
+    const textbox = document.querySelector("#textbox");
+    const inputEventIsComposing = ("InputEvent" in window) && InputEvent.prototype.hasOwnProperty("isComposing");
+    let isComposing;
+
+    function composing(inputEvent) {
+      if (inputEventIsComposing) {
+        return inputEvent.isComposing;
+      }
+      return isComposing;
+    }
+
+    function convertToHalfWidthNumber(text) {
+      return text.replace(/[０-９]/g, function (str) {
+        return String.fromCharCode(str.charCodeAt(0) - 0xFEE0);
+      });
+    }
+
+    function updateTextboxValue() {
+      const currentValue = textbox.value;
+      const newValue = convertToHalfWidthNumber(currentValue);
+      if (currentValue !== newValue) {
+        textbox.value = newValue;
+      }
+    }
+
+    function onInput(event) {
+      if (composing(event)) {
+        return;
+      }
+      updateTextboxValue();
+    }
+
+    function onCompositionend() {
+      updateTextboxValue();
+    }
+
+    textbox.addEventListener("input", onInput, false);
+    textbox.addEventListener("compositionend", onCompositionend, false);
+
+    if (!inputEventIsComposing) {
+      isComposing = false;
+
+      textbox.addEventListener("compositionstart", function () {
+        isComposing = true;
+      }, false);
+
+      textbox.addEventListener("compositionend", function () {
+        isComposing = false;
+      }, false);
+    }
+  })();
+</script>
+
+
+</body>
+</html>
