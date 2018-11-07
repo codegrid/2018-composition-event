@@ -23,11 +23,17 @@
     // 変換中かどうかを管理する変数
     let isComposing = false;
 
+    // 同期された文字列
+    let syncedText = "";
+
     // 文字列を同期する
     function syncText() {
-      if (log.textContent !== message.value) {
-        log.textContent = message.value;
+      const currentMessageValue = message.value;
+      if (syncedText === currentMessageValue) {
+        return;
       }
+      log.textContent = currentMessageValue;
+      syncedText = currentMessageValue;
     }
 
     function onInput() {

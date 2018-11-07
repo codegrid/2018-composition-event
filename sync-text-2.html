@@ -20,25 +20,44 @@
     const message = document.querySelector("#message");
     const log = document.querySelector("#log");
 
-    // inputイベントのisComposingが使用可能かどうか
-    const inputEventIsComposing = ("InputEvent" in window) && InputEvent.prototype.hasOwnProperty("isComposing");
-    // inputイベントのisComposingが使用できない場合の管理用変数
-    let isComposing;
+    // 同期された文字列
+    let syncedText = "";
 
-    // 文字列同期の関数
+    // 文字列を同期する
     function syncText() {
-      if (log.textContent !== message.value) {
-        log.textContent = message.value;
+      const currentMessageValue = message.value;
+      if (syncedText === currentMessageValue) {
+        return;
+      }
+      log.textContent = currentMessageValue;
+      syncedText = currentMessageValue;
+    }
+
+    // inputEvent発火時、変換中かどうかを返す関数を作成
+    function generateComposingFunc() {
+      // ブラウザがinputイベントのisComposingが使用可能なら、そのままisComposingを返す関数を作成
+      if (("InputEvent" in window) && InputEvent.prototype.hasOwnProperty("isComposing")) {
+        return function (event) {
+          return event.isComposing;
+        }
+      }
+
+      // inputイベントのisComposingが使用できない場合は管理用変数を使用する
+      let isComposing = false;
+
+      message.addEventListener("compositionstart", function () {
+        isComposing = true;
+      });
+      message.addEventListener("compositionend", function () {
+        isComposing = false;
+      });
+
+      return function () {
+        return isComposing;
       }
     }
 
-    // inputEvent発火時、変換中かどうかを返す
-    function composing(event) {
-      if (inputEventIsComposing) {
-        return event.isComposing;
-      }
-      return isComposing;
-    }
+    const composing = generateComposingFunc();
 
     function onInput(event) {
       if (composing(event)) {
@@ -53,19 +72,6 @@
 
     message.addEventListener("input", onInput, false);
     message.addEventListener("compositionend", onCompositionend, false);
-
-    // inputイベントのisComposingが使用できない場合は、Composition Eventsを使って管理する
-    if (!inputEventIsComposing) {
-      isComposing = false;
-
-      message.addEventListener("compositionstart", function (event) {
-        isComposing = true;
-      });
-
-      message.addEventListener("compositionend", function (event) {
-        isComposing = false;
-      });
-    }
   })();
 </script>
 
